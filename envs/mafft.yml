@@ -1,0 +1,6 @@
+name: AmpliPhy-mafft
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - mafft

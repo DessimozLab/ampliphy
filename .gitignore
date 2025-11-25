@@ -1,0 +1,49 @@
+# Nextflow runtime
+work/
+logs/
+.nextflow*
+.nextflow.log*
+.nextflow.history
+
+# Nextflow reports (re-generable)
+report.html
+timeline.html
+trace.txt
+dag.dot
+flowchart.dot
+
+# Pipeline outputs
+
+# Local / user-specific config
+local.config
+conf/local.config
+
+# Containers and images
+*.img
+*.sif
+*.singularity
+
+# Python / Conda
+.venv/
+.env
+.conda/
+__pycache__/
+.pytest_cache/
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.swp
+*~
