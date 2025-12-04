@@ -1,6 +1,7 @@
-name: AmpliPhy-mafft
+name: AmpliPhy-tools
 channels:
   - conda-forge
   - bioconda
 dependencies:
   - mafft
+  - mmseqs2

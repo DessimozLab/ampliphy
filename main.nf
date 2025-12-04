@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 
 include { mafft_align } from './modules/mafft_align.nf'
+include { mmseqs_search } from './modules/mmseqs_search.nf'
 
 workflow {
     main:
@@ -9,8 +10,7 @@ workflow {
         def output_dir = params.output_dir
 
         new File(output_dir).mkdirs()
-        log.info "AmpliPhy - MAFFT alignment"
-
+        
         def patterns = [
             "${input_dir}/*.{fa,fasta,faa,fna,ffn,frn}{.gz,}",
         ]
@@ -23,7 +23,11 @@ workflow {
                 def base = name.replaceFirst(/\.(fa|fasta|fna|ffn|faa|frn)(\.gz)?$/, '')
                 tuple( base, file )
             }
-            .set { seq_files }
+            .multiMap { tup -> mafft: tup; mmseqs: tup }
+            .set { seq_inputs }
 
-        mafft_align( seq_files )
+        log.info "AmpliPhy - MAFFT alignment"
+        mafft_align( seq_inputs.mafft )
+        log.info "AmpliPhy - MMseqs2 search"
+        mmseqs_search( seq_inputs.mmseqs )
 }
