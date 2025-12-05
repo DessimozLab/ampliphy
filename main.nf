@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 
 include { mafft_align } from './modules/mafft_align.nf'
+include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
 include { mmseqs_search } from './modules/mmseqs_search.nf'
 
 workflow {
@@ -28,6 +29,8 @@ workflow {
 
         log.info "AmpliPhy - MAFFT alignment"
         mafft_align( seq_inputs.mafft )
+        log.info "AmpliPhy - MMseqs2 database preparation"
+        def db_channel = mmseqs_prepare_db()
         log.info "AmpliPhy - MMseqs2 search"
-        mmseqs_search( seq_inputs.mmseqs )
+        mmseqs_search( seq_inputs.mmseqs, db_channel.mmseqs_db_path )
 }
