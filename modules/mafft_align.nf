@@ -8,7 +8,7 @@ process mafft_align {
         tuple val(id), path(fa)
 
     output:
-        path "${id}.msa.fasta"
+        path "${id}.msa.fa"
 
     script:
         def mafft_preset = params.mafft_preset.toLowerCase()
@@ -38,8 +38,8 @@ process mafft_align {
             ln -s ${fa} "input.fa"
         fi
 
-        mafft --thread ${threads} ${mafft_flag} input.fa \
+        mafft --quiet --thread ${threads} ${mafft_flag} input.fa \
         | awk '/^>/{if(x) print x; print; x=""; next} {x=x\$0} END{print x}' \
-        > ${id}.msa.fasta
+        > ${id}.msa.fa
         """
 }
