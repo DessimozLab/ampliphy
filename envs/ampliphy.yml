@@ -5,3 +5,4 @@ channels:
 dependencies:
   - mafft
   - mmseqs2
+  - iqtree>=2,<3

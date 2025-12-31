@@ -1,0 +1,22 @@
+nextflow.enable.dsl=2
+
+process iqtree_inference {
+    label 'short'
+    publishDir params.output_dir, mode: 'copy'
+
+    input:
+        tuple val(id), path(amp_fa)
+
+    output:
+        path "${id}.amp.nwk"
+
+    script:
+        def iqtree_options = params.iqtree_options ?: '-m JTT+I+G4'
+        def threads = params.threads ?: 1
+
+        """
+        set -euo pipefail
+        iqtree -s "${amp_fa}" -pre "${id}.amp" -T ${threads} ${iqtree_options}
+        cp "${id}.amp.treefile" "${id}.amp.nwk"
+        """
+}

@@ -5,6 +5,7 @@ include { mafft_align } from './modules/mafft_align.nf'
 include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
 include { mmseqs_search } from './modules/mmseqs_search.nf'
 include { mafft_amplify } from './modules/mafft_amplify.nf'
+include { iqtree_inference } from './modules/iqtree_inference.nf'
 
 workflow {
     main:
@@ -58,4 +59,16 @@ workflow {
 
         // log.info "AmpliPhy - MAFFT amplification with homologs"
         mafft_amplify( amplify_inputs )
+
+        mafft_amplify.out
+            .map { amp_file ->
+                def name = amp_file.getSimpleName()
+                def base = name.replaceFirst(/\.amp\.fa(\.gz)?$/, '')
+                tuple(base, amp_file)
+            }
+            .set { amp_tuples }
+            
+        // log.info "AmpliPhy - IQ-TREE2 phylogenetic inference"    
+        iqtree_inference( amp_tuples )
+
 }
