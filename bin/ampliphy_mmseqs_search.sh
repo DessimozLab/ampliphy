@@ -124,5 +124,5 @@ if [[ "${FINAL_MAX}" -gt "${FILTERED_COUNT}" ]]; then
 fi
 
 head -n "${EFFECTIVE_HITS}" "${RESULT_FILTERED}" \
-  | awk '{print ">" $1 "\n" $2}' \
+  | awk '{print ">" $1 "_enr\n" $2}' \
   > "${ID}.homologs.fa"
