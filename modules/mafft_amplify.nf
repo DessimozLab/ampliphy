@@ -1,6 +1,6 @@
 nextflow.enable.dsl=2
 
-process mafft_augment {
+process mafft_amplify {
     label 'short'
     publishDir params.output_dir, mode: 'copy'
 
@@ -8,7 +8,7 @@ process mafft_augment {
         tuple val(id), path(msa), path(homologs)
 
     output:
-        path "${id}.aug.fa"
+        path "${id}.amp.fa"
 
     script:
         def mafft_preset  = params.mafft_preset.toLowerCase()
@@ -32,8 +32,9 @@ process mafft_augment {
         """
         set -euo pipefail
 
-        mafft --anysymbol --quiet --keeplength --thread ${threads} ${mafft_flag} \\
-          --addfragments "${homologs}" "${msa}" \\
-          > ${id}.aug.fa
+        mafft --anysymbol --quiet --keeplength --thread ${threads} ${mafft_flag} \
+        --addfragments "${homologs}" "${msa}" \
+        | awk '/^>/{if(x) print x; print; x=""; next} {x=x\$0} END{print x}' \
+        > ${id}.amp.fa
         """
 }

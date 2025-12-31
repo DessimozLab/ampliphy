@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 include { mafft_align } from './modules/mafft_align.nf'
 include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
 include { mmseqs_search } from './modules/mmseqs_search.nf'
-include { mafft_augment } from './modules/mafft_augment.nf'
+include { mafft_amplify } from './modules/mafft_amplify.nf'
 
 workflow {
     main:
@@ -54,8 +54,8 @@ workflow {
         // Join on id -> (id, msa, homologs)
         msa_tuples
             .join(hom_tuples)
-            .set { augment_inputs }
+            .set { amplify_inputs }
 
-        // log.info "AmpliPhy - MAFFT augmentation with homologs"
-        mafft_augment( augment_inputs )
+        // log.info "AmpliPhy - MAFFT amplification with homologs"
+        mafft_amplify( amplify_inputs )
 }
