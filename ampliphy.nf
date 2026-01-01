@@ -85,12 +85,5 @@ workflow {
             .join(hom_tuples)
             .set { prune_inputs }
         
-        def os = System.getProperty('os.name').toLowerCase()
-        def mad_script = params.mad_script ?: (
-            os.contains('mac') || os.contains('darwin') ? 'bin/mad.osx'
-            : os.contains('win') ? 'bin/mad.exe'
-            : 'bin/mad'
-        )
-        
-        root_and_prune( prune_inputs, file(mad_script) )
+        root_and_prune( prune_inputs, file(params.mad_script) )
 }
