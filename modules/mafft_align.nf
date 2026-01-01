@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 process mafft_align {
     label 'short'
-    publishDir params.output_dir, mode: 'copy'
+    publishDir "${params.output_dir}/msa", mode: 'copy'
 
     input:
         tuple val(id), path(fa)

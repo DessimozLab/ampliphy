@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 process iqtree_inference {
     label 'short'
-    publishDir params.output_dir, mode: 'copy'
+    publishDir "${params.output_dir}/tree", mode: 'copy'
 
     input:
         tuple val(id), path(amp_fa)

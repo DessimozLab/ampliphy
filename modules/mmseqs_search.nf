@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 process mmseqs_search {
     label 'mmseqs'
-    publishDir params.output_dir, mode: 'copy'
+    publishDir "${params.output_dir}/homologs", mode: 'copy'
 
     input:
         tuple val(id), path(fa)
