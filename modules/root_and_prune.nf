@@ -22,7 +22,7 @@ process root_and_prune {
         if [[ "${no_rooting}" == "true" ]]; then
             cp "${amp_nwk}" "\${ROOTED}"
         else
-            "${mad_py}" "${amp_nwk}"
+            "./${mad_py}" "${amp_nwk}"
         fi
 
         TIPFILE="${id}.tips.txt"
