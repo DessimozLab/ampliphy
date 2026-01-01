@@ -6,6 +6,7 @@ include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
 include { mmseqs_search } from './modules/mmseqs_search.nf'
 include { mafft_amplify } from './modules/mafft_amplify.nf'
 include { iqtree_inference } from './modules/iqtree_inference.nf'
+include { root_and_prune }  from './modules/root_and_prune.nf'
 
 workflow {
     main:
@@ -71,4 +72,18 @@ workflow {
         // log.info "AmpliPhy - IQ-TREE2 phylogenetic inference"    
         iqtree_inference( amp_tuples )
 
+        iqtree_inference.out
+            .map { nwk_file ->
+            def name = nwk_file.getSimpleName()
+                def base = name.replaceFirst(/\.amp\.nwk(\.gz)?$/, '')
+                tuple(base, nwk_file)
+            }
+            .set { tree_tuples }
+
+        // log.info "AmpliPhy - Rooting and pruning trees"
+        tree_tuples
+            .join(hom_tuples)
+            .set { prune_inputs }
+            
+        root_and_prune( prune_inputs, file(params.mad_script) )
 }

@@ -3,6 +3,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  - numpy
   - mafft
   - mmseqs2
   - iqtree>=2,<3
+  - gotree

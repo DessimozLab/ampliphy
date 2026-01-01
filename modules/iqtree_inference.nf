@@ -11,7 +11,7 @@ process iqtree_inference {
         path "${id}.amp.nwk"
 
     script:
-        def iqtree_options = params.iqtree_options ?: '-m JTT+I+G4'
+        def iqtree_options = params.iqtree_options ?: '-m JTT+I+G4 -B 1000'
         def threads = params.threads ?: 1
 
         """
