@@ -2,6 +2,8 @@
 
 **_AmpliPhy_** is a scalable, fully automated Nextflow pipeline for improving phylogenetic inference through database-driven homolog enrichment. 
 
+Preprint (bioRxiv): [doi.org/10.64898/2026.01.26.701724](https://www.biorxiv.org/content/10.64898/2026.01.26.701724)
+
 ## Quick start
 
 Run with conda:
