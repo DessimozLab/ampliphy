@@ -16,7 +16,7 @@ process mmseqs_search {
         def mmseqs_options  = params.mmseqs_options ?: ''
         def max_depth_param = (params.max_depth ?: 5).toString()
         def max_seqs_param  = (params.max_seqs ?: 0).toString()
-        def threads         = params.threads ?: 4
+        def threads         = params.minimal ? 1 : params.threads
 
         def tmp_root_abs = new File(tmp_root.toString()).absolutePath
 

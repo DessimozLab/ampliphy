@@ -13,7 +13,7 @@ process mafft_align {
     script:
         def mafft_preset = params.mafft_preset.toLowerCase()
         def mafft_options = params.mafft_options
-        def threads = params.threads ?: 1
+        def threads = params.minimal ? 1 : params.threads
 
         Map mafft_preset_flags = [
             'auto' : '--auto',

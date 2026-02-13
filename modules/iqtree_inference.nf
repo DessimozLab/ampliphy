@@ -12,7 +12,7 @@ process iqtree_inference {
 
     script:
         def iqtree_options = params.iqtree_options ?: '-m JTT+I+G4 -B 1000'
-        def threads = params.threads ?: 1
+        def threads = params.minimal ? 1 : params.threads
 
         """
         set -euo pipefail
