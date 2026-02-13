@@ -2,8 +2,7 @@ name: Run the pipeline on test inputs
 
 on:
   push:
-     branches:
-	   - main
+     branches: [main]
   pull_request:
 
 jobs:
