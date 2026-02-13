@@ -3,6 +3,10 @@ set -euo pipefail
 
 # Run inside WSL (Ubuntu). Installs Nextflow + micromamba, creates env, runs .github/bin/ci_unix.sh
 
+# micromamba root prefix
+export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-$HOME/.micromamba}"
+mkdir -p "${MAMBA_ROOT_PREFIX}"
+
 apt-get update
 apt-get install -y curl ca-certificates openjdk-17-jre-headless bzip2 tar
 
@@ -19,9 +23,10 @@ if ! command -v micromamba >/dev/null 2>&1; then
 fi
 
 # Create env (idempotent)
-eval "$(micromamba shell hook -s bash)"
-if ! micromamba env list | awk '{print $1}' | grep -qx ampliphy; then
-  micromamba create -y -n ampliphy -f envs/ampliphy.yml
+eval "$(micromamba shell hook -s bash -r "${MAMBA_ROOT_PREFIX}")"
+
+if ! micromamba -r "${MAMBA_ROOT_PREFIX}" env list | awk '{print $1}' | grep -qx ampliphy; then
+  micromamba -r "${MAMBA_ROOT_PREFIX}" create -y -n ampliphy -f envs/ampliphy.yml
 fi
 
-micromamba run -n ampliphy bash .github/bin/ci_unix.sh
+micromamba -r "${MAMBA_ROOT_PREFIX}" run -n ampliphy bash .github/bin/ci_unix.sh
