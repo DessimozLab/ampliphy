@@ -2,12 +2,12 @@ name: Run the pipeline on test inputs
 
 on:
   push:
-     branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
-  test:
-    name: Test pipeline on small inputs
+  unix:
+    name: Test pipeline on Linux and macOS
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -15,151 +15,39 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java (Nextflow)
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v2
+      - uses: nf-core/setup-nextflow@v2
 
-      - name: Set up micromamba env
-        uses: mamba-org/setup-micromamba@v2
+      - uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: envs/ampliphy.yml
+          environment-name: ampliphy
           cache-environment: true
           init-shell: bash
 
-      - name: Make bin scripts executable
+      - name: Run CI
         shell: bash -l {0}
-        run: |
-          set -euo pipefail
-          chmod +x bin/*.sh || true
-          chmod +x bin/mad.py 2>/dev/null || true
+        run: micromamba run -n ampliphy bash .github/bin/ci_unix.sh
 
-      - name: Prepare tiny test inputs + local MMseqs DB
-        shell: bash -l {0}
-        run: |
-          set -euo pipefail
+  windows-wsl:
+    name: Test pipeline on Windows via WSL
+    runs-on: windows-latest
 
-          rm -rf ci sample_input sample_output mmseqs_db tmp
-          mkdir -p ci/input ci/out tmp mmseqs_db sample_input
+    steps:
+      - uses: actions/checkout@v4
 
-          # Two small "families" (these become ids: input1, input2)
-          cat > sample_input/input1.fa <<'EOF'
-          >QRY1_A
-          MKTIIALSYIFCLVFADYKDDDDK
-          >QRY1_B
-          MKTVIALSYIFCLVFAEYKDDDDK
-          >QRY1_C
-          MKTVIALSYIFCLVFAEYKDDDDE
-          EOF
+      - uses: Vampire/setup-wsl@v6
+        with:
+          distribution: Ubuntu-22.04
+          wsl-version: 2
+          update: "true"
 
-          cat > sample_input/input2.fa <<'EOF'
-          >QRY2_A
-          GAVLIPFWYTSNQDEHKR
-          >QRY2_B
-          GAVLIPFWYTSNQDEHKQ
-          >QRY2_C
-          GAVLIPFWYTSNQDEHKK
-          EOF
-
-          # For the tuned run, reuse the same files but in ci/input
-          cp sample_input/input1.fa ci/input/input1.fa
-          cp sample_input/input2.fa ci/input/input2.fa
-
-          # Reference DB includes exact sequences + variants (exercises identical-hit filtering)
-          cat > tmp/ref.fa <<'EOF'
-          >REF1_A
-          MKTIIALSYIFCLVFADYKDDDDK
-          >REF1_A_var
-          MKTIIALSYIFCLVFADYKDDDDN
-          >REF1_B
-          MKTVIALSYIFCLVFAEYKDDDDK
-          >REF1_B_var
-          MKTVIALSYIFCLVFAEYKDDDDN
-          >REF1_C
-          MKTVIALSYIFCLVFAEYKDDDDE
-          >REF1_C_var
-          MKTVIALSYIFCLVFAEYKDDDDQ
-          >REF2_A
-          GAVLIPFWYTSNQDEHKR
-          >REF2_A_var
-          GAVLIPFWYTSNQDEHKA
-          >REF2_B
-          GAVLIPFWYTSNQDEHKQ
-          >REF2_B_var
-          GAVLIPFWYTSNQDEHKG
-          >REF2_C
-          GAVLIPFWYTSNQDEHKK
-          >REF2_C_var
-          GAVLIPFWYTSNQDEHKT
-          EOF
-
-          # Create a small MMseqs DB at the *default* location/prefix:
-          # params.database_dir = mmseqs_db, params.database = UniRef50
-          mmseqs createdb tmp/ref.fa mmseqs_db/UniRef50
-          mmseqs createindex mmseqs_db/UniRef50 tmp --threads 2 || true
-
-          echo "Versions:"
-          nextflow -version || true
-          mafft --version | head -n 1 || true
-          mmseqs version || true
-          iqtree2 --version || true
-          gotree version || true
-
-      - name: Run pipeline (standard)
-        shell: bash -l {0}
-        env:
-          NXF_OPTS: "-Xms256m -Xmx2g"
-        run: |
-          set -euo pipefail
-          nextflow run ampliphy.nf -profile standard --minimal true
-
-      - name: Assert outputs exist (standard)
-        shell: bash -l {0}
-        run: |
-          set -euo pipefail
-          for id in input1 input2; do
-            test -f "sample_output/msa/${id}.msa.fa"
-            test -f "sample_output/homologs/${id}.homologs.fa"
-            test -f "sample_output/msa/${id}.amp.fa"
-            test -f "sample_output/tree/${id}.amp.nwk"
-            test -f "sample_output/tree/${id}.nwk"
-          done
-
-      - name: Run pipeline (tuned)
-        shell: bash -l {0}
-        env:
-          NXF_OPTS: "-Xms256m -Xmx2g"
-        run: |
-          set -euo pipefail
-
-          nextflow run ampliphy.nf -profile standard \
-            --minimal true \
-            --input_dir ci/input \
-            --output_dir ci/out \
-            --custom_database mmseqs_db/UniRef50 \
-            --mmseqs_options "-e inf --min-seq-id 0.0" \
-            --max_depth 1 \
-            --max_seqs 10 \
-            --iqtree_options "-m WAG+F" \
-            --no_rooting true \
-            --threads 2
-
-      - name: Assert outputs exist (tuned)
-        shell: bash -l {0}
-        run: |
-          set -euo pipefail
-          for id in input1 input2; do
-            test -f "ci/out/msa/${id}.msa.fa"
-            test -f "ci/out/homologs/${id}.homologs.fa"
-            test -f "ci/out/msa/${id}.amp.fa"
-            test -f "ci/out/tree/${id}.amp.nwk"
-            test -f "ci/out/tree/${id}.nwk"
-          done
-
+      - name: Run CI inside WSL
+        shell: wsl-bash {0}
+        run: bash .github/bin/ci_wsl.sh
