@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# This script is vibe coded.
 set -euo pipefail
 
 # Run inside WSL (Ubuntu). Installs Nextflow + micromamba, creates env, runs .github/bin/ci_unix.sh

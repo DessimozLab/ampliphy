@@ -1,1 +1,4 @@
 bin/mad.py linguist-vendored
+
+.github/**/*.sh text eol=lf
+bin/**/*.sh text eol=lf

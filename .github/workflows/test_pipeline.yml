@@ -1,4 +1,4 @@
-name: Run the pipeline on test inputs
+name: Pipeline test runs
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   unix:
-    name: Test pipeline on Linux and macOS
+    name: Test run on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,7 +36,7 @@ jobs:
         run: micromamba run -n ampliphy bash .github/bin/ci_unix.sh
 
   windows-wsl:
-    name: Test pipeline on Windows via WSL
+    name: Test run on Windows via WSL
     runs-on: windows-latest
 
     steps:

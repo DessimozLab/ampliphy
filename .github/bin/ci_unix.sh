@@ -5,7 +5,10 @@ set -euo pipefail
 #  - "standard": default algorithmic params (only CI toggles: --minimal/--no_rooting/--threads)
 #  - "tuned": CI-tuned params to exercise overrides
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "${ROOT_DIR}" ]]; then
+  ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
 cd "${ROOT_DIR}"
 
 rm -rf ci sample_input sample_output mmseqs_db tmp
@@ -69,7 +72,7 @@ iqtree2 --version || true
 gotree version || true
 
 echo "=== Run: standard (defaults; CI toggles only) ==="
-nextflow run ampliphy.nf -profile standard \
+nextflow run ./ampliphy.nf -profile standard \
   --minimal true \
   --no_rooting true \
   --threads 2
@@ -83,7 +86,7 @@ for id in input1 input2; do
 done
 
 echo "=== Run: tuned (CI-tuned overrides) ==="
-nextflow run ampliphy.nf -profile standard \
+nextflow run ./ampliphy.nf -profile standard \
   --minimal true \
   --no_rooting true \
   --threads 2 \
