@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process mmseqs_search {
-    label 'mmseqs'
+    label params.minimal ? 'minimal' : 'mmseqs'
     publishDir "${params.output_dir}/homologs", mode: 'copy'
 
     input:

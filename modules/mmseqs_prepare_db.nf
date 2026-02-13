@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process mmseqs_prepare_db {
-    label 'mmseqs'
+    label params.minimal ? 'minimal' : 'mmseqs'
 
     output:
         path 'mmseqs_db_target.txt', emit: mmseqs_db_path

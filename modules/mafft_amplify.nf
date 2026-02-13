@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process mafft_amplify {
-    label 'short'
+    label params.minimal ? 'minimal' : 'short'
     publishDir "${params.output_dir}/msa", mode: 'copy'
 
     input:

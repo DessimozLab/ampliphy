@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Test (ubuntu/macos)
+    name: Test pipeline on small inputs
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -41,7 +41,7 @@ jobs:
           chmod +x bin/*.sh || true
           chmod +x bin/mad.py 2>/dev/null || true
 
-      - name: Prepare tiny test inputs + local MMseqs DB (as "UniRef50")
+      - name: Prepare tiny test inputs + local MMseqs DB
         shell: bash -l {0}
         run: |
           set -euo pipefail
@@ -112,13 +112,13 @@ jobs:
           iqtree2 --version || true
           gotree version || true
 
-      - name: Run pipeline (standard; no param overrides)
+      - name: Run pipeline (standard)
         shell: bash -l {0}
         env:
           NXF_OPTS: "-Xms256m -Xmx2g"
         run: |
           set -euo pipefail
-          nextflow run ampliphy.nf -profile standard
+          nextflow run ampliphy.nf -profile standard --minimal true
 
       - name: Assert outputs exist (standard)
         shell: bash -l {0}
@@ -140,6 +140,7 @@ jobs:
           set -euo pipefail
 
           nextflow run ampliphy.nf -profile standard \
+            --minimal true \
             --input_dir ci/input \
             --output_dir ci/out \
             --custom_database mmseqs_db/UniRef50 \

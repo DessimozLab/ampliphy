@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process root_and_prune {
-    label 'short'
+    label params.minimal ? 'minimal' : 'short'
     publishDir "${params.output_dir}/tree", mode: 'copy'
 
     input:
