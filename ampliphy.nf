@@ -65,7 +65,13 @@ workflow {
             .map { amp_file ->
                 def name = amp_file.getSimpleName()
                 def base = name.replaceFirst(/\.amp\.fa(\.gz)?$/, '')
-                tuple(base, amp_file)
+
+                def nseq = 0
+                amp_file.eachLine { line ->
+                    if( line.startsWith('>') ) nseq = nseq + 1
+                }
+
+                tuple(base, amp_file, nseq)
             }
             .set { amp_tuples }
             
