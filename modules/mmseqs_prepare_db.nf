@@ -61,6 +61,7 @@ process mmseqs_prepare_db {
         def db_target = custom_database_absolute ?: "${db_root_abs}/${db_dir_name}"
 
         def no_taxonomy = params.no_taxonomy ?: false
+        def require_taxonomy = params.input_taxonomy ? 'true' : 'false'       
 
         """
         set -euo pipefail
@@ -71,6 +72,7 @@ process mmseqs_prepare_db {
         --custom-db '${custom_database_absolute}' \
         --tmp-root '${tmp_root_abs}' \
         --no-taxonomy '${no_taxonomy}' \
+        --require-taxonomy '${require_taxonomy}' \
         --taxonomy-status 'mmseqs_taxonomy_status.txt'
 
         printf '%s\\n' '${db_target}' > mmseqs_db_target.txt

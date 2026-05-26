@@ -6,16 +6,18 @@ DB_TARGET=""
 CUSTOM_DB=""
 TMP_ROOT=""
 NO_TAXONOMY="false"
+REQUIRE_TAXONOMY="false"
 TAXONOMY_STATUS=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --database)        DATABASE="$2"; shift 2 ;;
-    --db-target)       DB_TARGET="$2"; shift 2 ;;
-    --custom-db)       CUSTOM_DB="$2"; shift 2 ;;
-    --tmp-root)        TMP_ROOT="$2"; shift 2 ;;
-    --no-taxonomy)     NO_TAXONOMY="$2"; shift 2 ;;
-    --taxonomy-status) TAXONOMY_STATUS="$2"; shift 2 ;;
+    --database)         DATABASE="$2"; shift 2 ;;
+    --db-target)        DB_TARGET="$2"; shift 2 ;;
+    --custom-db)        CUSTOM_DB="$2"; shift 2 ;;
+    --tmp-root)         TMP_ROOT="$2"; shift 2 ;;
+    --no-taxonomy)      NO_TAXONOMY="$2"; shift 2 ;;
+    --require-taxonomy) REQUIRE_TAXONOMY="$2"; shift 2 ;;
+    --taxonomy-status)  TAXONOMY_STATUS="$2"; shift 2 ;;
     *)
       echo "[ampliphy-mmseqs-prepare] Unknown argument: $1" >&2
       exit 1
@@ -50,9 +52,19 @@ else
 fi
 
 if [[ "${NO_TAXONOMY}" == "true" ]]; then
+  if [[ "${REQUIRE_TAXONOMY}" == "true" ]]; then
+    echo "Error: --input_taxonomy cannot be used together with --no_taxonomy." >&2
+    exit 1
+  fi
   printf 'disabled\tuser_disabled\n' > "${TAXONOMY_STATUS}"
+
 elif [[ -e "${DB_TARGET}_mapping" && -e "${DB_TARGET}_taxonomy" ]]; then
   printf 'enabled\t%s\n' "${DB_TARGET}" > "${TAXONOMY_STATUS}"
+
+elif [[ "${REQUIRE_TAXONOMY}" == "true" ]]; then
+  echo "Error: --input_taxonomy was supplied, but MMseqs2 taxonomy metadata was not found for ${DB_TARGET}." >&2
+  exit 1
+
 else
   echo "Warning: Taxonomy reporting disabled because taxonomy metadata was not found for ${DB_TARGET}." >&2
   printf 'disabled\ttaxonomy_metadata_unavailable\n' > "${TAXONOMY_STATUS}"

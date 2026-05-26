@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+include { amplified_taxonomy } from './modules/amplified_taxonomy.nf'
 include { homolog_taxonomy } from './modules/homolog_taxonomy.nf'
 include { mafft_align } from './modules/mafft_align.nf'
 include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
@@ -28,7 +29,7 @@ workflow {
                 def base = name.replaceFirst(/\.(fa|fasta|fna|ffn|faa|frn)(\.gz)?$/, '')
                 tuple( base, file )
             }
-            .multiMap { tup -> mafft: tup; mmseqs: tup }
+            .multiMap { tup -> mafft: tup; mmseqs: tup; taxonomy: tup }
             .set { seq_inputs }
 
         // log.info "AmpliPhy - MAFFT alignment"
@@ -53,7 +54,35 @@ workflow {
         mmseqs_search.out.homolog_taxids
             .collect()
             .set { homolog_taxid_files }
+
         homolog_taxonomy( homolog_taxid_files )
+        
+        if( params.input_taxonomy ) {
+            if( params.no_taxonomy ) {
+                error "--input_taxonomy cannot be used with --no_taxonomy because added homolog taxids are required for the amplified taxonomy report."
+            }
+
+            channel
+                .fromPath("${params.input_taxonomy}/*.tax", checkIfExists: true)
+                .ifEmpty { error "No <family_id>.tax files found in --input_taxonomy directory: ${params.input_taxonomy}" }
+                .collect()
+                .set { input_taxonomy_files }
+
+            seq_inputs.taxonomy
+                .map { _id, fasta -> fasta }
+                .collect()
+                .set { input_fasta_files }
+
+            mmseqs_search.out.homolog_taxids
+                .collect()
+                .set { added_homolog_taxid_files }
+
+            amplified_taxonomy(
+                input_fasta_files,
+                input_taxonomy_files,
+                added_homolog_taxid_files
+            )
+        }
 
         mafft_align.out
             .map { msa_file ->

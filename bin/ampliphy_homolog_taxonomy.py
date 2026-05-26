@@ -239,8 +239,8 @@ def main() -> None:
 
     header = [
         "family_id",
-        "homologs_added",
-        "homologs_with_taxid",
+        "sequence_count",
+        "sequences_with_taxid",
         *[column for _, column in RANK_COLUMNS],
         "lca_taxid",
         "lca_name",
