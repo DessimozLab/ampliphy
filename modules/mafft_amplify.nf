@@ -32,9 +32,14 @@ process mafft_amplify {
         """
         set -euo pipefail
 
-        mafft --anysymbol --quiet --keeplength --thread ${threads} ${mafft_flag} \
-        --addfragments "${homologs}" "${msa}" \
-        | awk '/^>/{if(x) print x; print; x=""; next} {x=x\$0} END{print x}' \
-        > ${id}.amp.fa
+        if [[ ! -s "${homologs}" ]]; then
+            echo "Warning: No non-identical homologs were retrieved for ${id}; using the original MSA without amplification." >&2
+            cp "${msa}" "${id}.amp.fa"
+        else
+            mafft --anysymbol --quiet --keeplength --thread ${threads} ${mafft_flag} \
+            --addfragments "${homologs}" "${msa}" \
+            | awk '/^>/{if(x) print x; print; x=""; next} {x=x\$0} END{print x}' \
+            > "${id}.amp.fa"
+        fi
         """
 }
