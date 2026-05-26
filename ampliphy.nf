@@ -36,6 +36,15 @@ workflow {
         def db_channel = mmseqs_prepare_db()
         // log.info "AmpliPhy - MMseqs2 search"
         mmseqs_search( seq_inputs.mmseqs, db_channel.mmseqs_db_path )
+        mmseqs_search.out.homolog_search_stats
+            .map { report_file -> report_file.text.trim() }
+            .collectFile(
+                name: 'homolog_search_report.tsv',
+                seed: "family_id\toriginal_sequences\thomologs_found\thomologs_added\tamplified_sequences",
+                newLine: true,
+                sort: true,
+                storeDir: "${output_dir}/report"
+            )
 
         mafft_align.out
             .map { msa_file ->

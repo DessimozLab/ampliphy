@@ -2,7 +2,8 @@ nextflow.enable.dsl=2
 
 process mmseqs_search {
     label params.minimal ? 'minimal' : 'mmseqs'
-    publishDir "${params.output_dir}/homologs", mode: 'copy'
+    publishDir "${params.output_dir}/homologs", mode: 'copy',
+        saveAs: { filename -> filename.endsWith('.homologs.fa') ? filename : null }
 
     input:
         tuple val(id), path(fa)
@@ -10,6 +11,7 @@ process mmseqs_search {
 
     output:
         path "${id}.homologs.fa", emit: homolog_seqs
+        path "${id}.homolog_search_stats.tsv", emit: homolog_search_stats
 
     script:
         def tmp_root        = params.tmp_dir ?: './tmp'
