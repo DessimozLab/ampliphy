@@ -5,6 +5,7 @@ process mmseqs_prepare_db {
 
     output:
         path 'mmseqs_db_target.txt', emit: mmseqs_db_path
+        path 'mmseqs_taxonomy_status.txt', emit: taxonomy_status
 
     script:
         def custom_database = params.custom_database ?: ''
@@ -59,6 +60,8 @@ process mmseqs_prepare_db {
         // Final DB prefix on disk
         def db_target = custom_database_absolute ?: "${db_root_abs}/${db_dir_name}"
 
+        def no_taxonomy = params.no_taxonomy ?: false
+
         """
         set -euo pipefail
 
@@ -66,7 +69,9 @@ process mmseqs_prepare_db {
         --database '${db_name_for_mmseqs}' \
         --db-target '${db_target}' \
         --custom-db '${custom_database_absolute}' \
-        --tmp-root '${tmp_root_abs}'
+        --tmp-root '${tmp_root_abs}' \
+        --no-taxonomy '${no_taxonomy}' \
+        --taxonomy-status 'mmseqs_taxonomy_status.txt'
 
         printf '%s\\n' '${db_target}' > mmseqs_db_target.txt
         """

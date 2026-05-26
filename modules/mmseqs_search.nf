@@ -8,10 +8,12 @@ process mmseqs_search {
     input:
         tuple val(id), path(fa)
         path db_file
+        path taxonomy_status_file
 
     output:
         path "${id}.homologs.fa", emit: homolog_seqs
         path "${id}.homolog_search_stats.tsv", emit: homolog_search_stats
+        path "${id}.homolog_taxids.tsv", emit: homolog_taxids, optional: true
 
     script:
         def tmp_root        = params.tmp_dir ?: './tmp'
@@ -32,6 +34,7 @@ process mmseqs_search {
           --input ${fa} \
           --db-target "\${DB_TARGET}" \
           --tmp-root '${tmp_root_abs}' \
+          --taxonomy-status ${taxonomy_status_file} \
           --mmseqs-options '${mmseqs_options}' \
           --max-depth '${max_depth_param}' \
           --max-seqs '${max_seqs_param}' \

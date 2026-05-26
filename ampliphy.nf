@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+include { homolog_taxonomy } from './modules/homolog_taxonomy.nf'
 include { mafft_align } from './modules/mafft_align.nf'
 include { mmseqs_prepare_db } from './modules/mmseqs_prepare_db.nf'
 include { mmseqs_search } from './modules/mmseqs_search.nf'
@@ -35,7 +36,11 @@ workflow {
         // log.info "AmpliPhy - MMseqs2 database preparation"
         def db_channel = mmseqs_prepare_db()
         // log.info "AmpliPhy - MMseqs2 search"
-        mmseqs_search( seq_inputs.mmseqs, db_channel.mmseqs_db_path )
+        mmseqs_search(
+            seq_inputs.mmseqs,
+            db_channel.mmseqs_db_path,
+            db_channel.taxonomy_status
+        )
         mmseqs_search.out.homolog_search_stats
             .map { report_file -> report_file.text.trim() }
             .collectFile(
@@ -45,6 +50,10 @@ workflow {
                 sort: true,
                 storeDir: "${output_dir}/report"
             )
+        mmseqs_search.out.homolog_taxids
+            .collect()
+            .set { homolog_taxid_files }
+        homolog_taxonomy( homolog_taxid_files )
 
         mafft_align.out
             .map { msa_file ->
