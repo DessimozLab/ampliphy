@@ -19,7 +19,7 @@ RANK_COLUMNS = [
     ("class", "distinct_classes"),
     ("phylum", "distinct_phyla"),
     ("kingdom", "distinct_kingdoms"),
-    ("superkingdom", "distinct_domains"),
+    ("domain", "distinct_domains"),
 ]
 
 
