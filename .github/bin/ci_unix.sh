@@ -138,6 +138,7 @@ done
 echo "=== Run: taxonomy (test NCBI taxonomy parsing) ==="
 nextflow run ./ampliphy.nf -profile standard \
   --minimal true \
+  --no_rooting true \
   --threads 2 \
   --input_dir sample_input \
   --input_taxonomy sample_taxonomy \
