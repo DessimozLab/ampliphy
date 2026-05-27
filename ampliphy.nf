@@ -53,7 +53,7 @@ workflow {
                 sort: true,
                 storeDir: "${output_dir}/report"
             )
-            
+
         if( !params.no_taxonomy ) {
             mmseqs_search.out.homolog_taxids
                 .collect()
@@ -181,7 +181,7 @@ workflow {
                 .map { row_file -> row_file.text.trim() }
                 .collectFile(
                     name: 'amplified_tcs_report.tsv',
-                    seed: "family_id\ttcs_ori\ttcs_amp\n",
+                    seed: "family_id\ttcs_ori\ttcs_amp",
                     newLine: true,
                     sort: true,
                     storeDir: "${output_dir}/report"

@@ -23,7 +23,7 @@ process root_and_prune {
             cp "${amp_unpruned_nwk}" "\${ROOTED}"
         else
             chmod +x "${mad_script}" || true
-            "./${mad_script}" "${amp_unpruned_nwk}"
+            "./${mad_script}" "${amp_unpruned_nwk} -n"
         fi
 
         if [[ ! -s "${homologs_fa}" ]]; then
