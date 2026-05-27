@@ -1,4 +1,4 @@
-bin/mad.py linguist-vendored
+bin/* linguist-vendored
 
 .github/**/*.sh text eol=lf
 bin/**/*.sh text eol=lf

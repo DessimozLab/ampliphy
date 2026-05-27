@@ -2,13 +2,16 @@ nextflow.enable.dsl=2
 
 process iqtree_inference {
     label params.minimal ? 'minimal' : 'short'
-    publishDir "${params.output_dir}/tree", mode: 'copy'
+    publishDir "${params.output_dir}/tree", mode: 'copy',
+        saveAs: { filename ->
+            params.keep_unpruned_tree && filename.endsWith('.amp.unpruned.nwk') ? filename : null
+        }
 
     input:
-        tuple val(id), path(amp_fa), val(nseq)
+        tuple val(id), val(tree_type), path(msa), val(nseq)
 
     output:
-        path "${id}.amp.nwk"
+        tuple val(id), val(tree_type), path("${id}.${tree_type}.nwk"), emit: inferred_trees
 
     script:
         def iqtree_options = params.iqtree_options ?: '-m JTT+I+G4 -B 1000 -keep-ident'
@@ -23,10 +26,9 @@ process iqtree_inference {
 
             log.warn "Bootstrap analysis disabled for ${id}: amplified MSA contains only ${nseq} sequences."
         }
-        
+
         """
-        set -euo pipefail
-        iqtree -s "${amp_fa}" -pre "${id}.amp" -T ${threads} ${iqtree_options}
-        cp "${id}.amp.treefile" "${id}.amp.nwk"
+        iqtree -s ${msa} -pre ${id}.${tree_type} -T ${threads} ${iqtree_options}
+        cp ${id}.${tree_type}.treefile ${id}.${tree_type}.nwk
         """
 }

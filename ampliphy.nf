@@ -9,6 +9,8 @@ include { mmseqs_search } from './modules/mmseqs_search.nf'
 include { mafft_amplify } from './modules/mafft_amplify.nf'
 include { iqtree_inference } from './modules/iqtree_inference.nf'
 include { root_and_prune }  from './modules/root_and_prune.nf'
+include { input_lineage } from './modules/input_lineage.nf'
+include { amplified_tcs } from './modules/amplified_tcs.nf'
 
 workflow {
     main:
@@ -112,31 +114,74 @@ workflow {
             .map { amp_file ->
                 def name = amp_file.getSimpleName()
                 def base = name.replaceFirst(/\.amp\.fa(\.gz)?$/, '')
-
                 def nseq = 0
                 amp_file.eachLine { line ->
-                    if( line.startsWith('>') ) nseq = nseq + 1
+                    if( line.startsWith('>') ) { nseq = nseq + 1 }
                 }
-
-                tuple(base, amp_file, nseq)
+                tuple(base, 'amp.unpruned', amp_file, nseq)
             }
-            .set { amp_tuples }
-            
-        // log.info "AmpliPhy - IQ-TREE2 phylogenetic inference"    
-        iqtree_inference( amp_tuples )
+            .set { amp_iqtree_inputs }
 
-        iqtree_inference.out
-            .map { nwk_file ->
-            def name = nwk_file.getSimpleName()
-                def base = name.replaceFirst(/\.amp\.nwk(\.gz)?$/, '')
-                tuple(base, nwk_file)
+        def ori_iqtree_inputs = channel.empty()
+
+        if( params.input_taxonomy ) {
+            ori_iqtree_inputs = mafft_align.out.map { msa_file ->
+                def name = msa_file.getSimpleName()
+                def base = name.replaceFirst(/\.msa\.fa(\.gz)?$/, '')
+                def nseq = 0
+                msa_file.eachLine { line ->
+                    if( line.startsWith('>') ) { nseq = nseq + 1 }
+                }
+                tuple(base, 'ori', msa_file, nseq)
             }
-            .set { tree_tuples }
+        }
 
-        // log.info "AmpliPhy - Rooting and pruning trees"
-        tree_tuples
+        amp_iqtree_inputs
+            .mix(ori_iqtree_inputs)
+            .set { iqtree_inputs }
+
+        iqtree_inference( iqtree_inputs )
+
+        iqtree_inference.out.inferred_trees
+            .filter { _id, tree_type, _nwk_file -> tree_type == 'amp.unpruned' }
+            .map { id, _tree_type, nwk_file -> tuple(id, nwk_file) }
             .join(hom_tuples)
             .set { prune_inputs }
-        
+
         root_and_prune( prune_inputs, file(params.mad_script) )
+
+        if( params.input_taxonomy ) {
+            input_lineage( input_fasta_files, input_taxonomy_files )
+
+            input_lineage.out.lineages
+                .flatten()
+                .map { lineage_file ->
+                    def name = lineage_file.getSimpleName()
+                    def base = name.replaceFirst(/\.lineage\.tsv$/, '')
+                    tuple(base, lineage_file)
+                }
+                .set { lineage_tuples }
+
+            iqtree_inference.out.inferred_trees
+                .filter { _id, tree_type, _nwk_file -> tree_type == 'ori' }
+                .map { id, _tree_type, nwk_file -> tuple(id, nwk_file) }
+                .set { ori_tree_tuples }
+
+            ori_tree_tuples
+                .join(root_and_prune.out.amplified_trees)
+                .join(lineage_tuples)
+                .set { tcs_inputs }
+
+            amplified_tcs( tcs_inputs, file(params.tcs_script) )
+
+            amplified_tcs.out.tcs_rows
+                .map { row_file -> row_file.text.trim() }
+                .collectFile(
+                    name: 'amplified_tcs_report.tsv',
+                    seed: "family_id\ttcs_ori\ttcs_amp\n",
+                    newLine: true,
+                    sort: true,
+                    storeDir: "${output_dir}/report"
+                )
+        }
 }
