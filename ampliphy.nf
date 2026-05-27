@@ -53,11 +53,14 @@ workflow {
                 sort: true,
                 storeDir: "${output_dir}/report"
             )
-        mmseqs_search.out.homolog_taxids
-            .collect()
-            .set { homolog_taxid_files }
+            
+        if( !params.no_taxonomy ) {
+            mmseqs_search.out.homolog_taxids
+                .collect()
+                .set { homolog_taxonomy_inputs }
 
-        homolog_taxonomy( homolog_taxid_files )
+            homolog_taxonomy( homolog_taxonomy_inputs )
+        }
         
         if( params.input_taxonomy ) {
             if( params.no_taxonomy ) {

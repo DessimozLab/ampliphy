@@ -11,8 +11,9 @@ Run with conda:
 ```bash
 git clone https://github.com/DessimozLab/ampliphy.git
 nextflow run ampliphy.nf -profile conda \
-  --input_dir sample_input \
-  --output_dir results
+  --input_dir sample/input \
+  --input_taxonomy sample/taxonomy \
+  --output_dir sample/output
 ```
 
 ## Key features
