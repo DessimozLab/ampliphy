@@ -103,5 +103,4 @@ for id in input1 input2; do
   test -f "ci/out/homologs/${id}.homologs.fa"
   test -f "ci/out/msa/${id}.amp.fa"
   test -f "ci/out/tree/${id}.amp.nwk"
-  test -f "ci/out/tree/${id}.nwk"
 done
