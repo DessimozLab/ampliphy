@@ -323,7 +323,7 @@ def main() -> None:
 
             writer.writerow(
                 summarize(
-                    family_id,
+                    f"{family_id}.ori",
                     len(fasta_ids),
                     input_taxids,
                     parent,
