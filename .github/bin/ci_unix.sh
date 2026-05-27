@@ -24,9 +24,9 @@ MKTVIALSYIFCLVFAEYKDDDDE
 EOF
 
 cat > sample_taxonomy/input1.tax <<'EOF'
-QRY1_A 9606
-QRY1_B 9598
-QRY1_C 9913
+QRY1_A	9606
+QRY1_B	9598
+QRY1_C	9913
 EOF
 
 cat > sample_input/input2.fa <<'EOF'
@@ -39,9 +39,9 @@ GAVLIPFWYTSNQDEHKK
 EOF
 
 cat > sample_taxonomy/input2.tax <<'EOF'
-QRY2_A 13616
-QRY2_B 9612
-QRY2_C 9606
+QRY2_A	13616
+QRY2_B	9612
+QRY2_C	9606
 EOF
 
 # Small local MMseqs DB at the *default* location/prefix:
@@ -74,18 +74,18 @@ GAVLIPFWYTSNQDEHKT
 EOF
 
 cat > tmp/taxonomy.tsv <<'EOF'
-REF1_A 9606
-REF1_A_var 10090
-REF1_B 9598
-REF1_B_var 10116
-REF1_C 9913
-REF1_C_var 13616
-REF2_A 13616
-REF2_A_var 9598
-REF2_B 9544
-REF2_B_var 9031
-REF2_C 9606
-REF2_C_var 10090
+REF1_A	9606
+REF1_A_var	10090
+REF1_B	9598
+REF1_B_var	10116
+REF1_C	9913
+REF1_C_var	13616
+REF2_A	13616
+REF2_A_var	9598
+REF2_B	9544
+REF2_B_var	9031
+REF2_C	9606
+REF2_C_var	10090
 EOF
 
 wget -q -O ncbi_taxonomy/taxdump.tar.gz https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
