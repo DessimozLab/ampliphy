@@ -2,3 +2,4 @@ bin/* linguist-vendored
 
 .github/**/*.sh text eol=lf
 bin/**/*.sh text eol=lf
+bin/**/*.py text eol=lf
