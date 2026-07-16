@@ -191,11 +191,15 @@ def summarize(
     family_id: str,
     sequence_count: int,
     taxids: List[str],
+    input_species_taxids: set,
     parent: Dict[str, str],
     rank: Dict[str, str],
     name: Dict[str, str],
 ) -> List[object]:
     lineages = [lineage(taxid, parent) for taxid in taxids]
+    sequences_matching_input_species = sum(
+        1 for taxid in taxids if taxid in input_species_taxids
+    )
 
     rank_counts = []
     for target_rank, _ in RANK_COLUMNS:
@@ -214,6 +218,7 @@ def summarize(
         family_id,
         sequence_count,
         len(taxids),
+        sequences_matching_input_species,
         *rank_counts,
         lca_taxid or "",
         lca_name,
@@ -292,6 +297,7 @@ def main() -> None:
         "family_id",
         "sequence_count",
         "sequences_with_taxid",
+        "sequences_matching_input_species",
         *[column for _, column in RANK_COLUMNS],
         "lca_taxid",
         "lca_name",
@@ -315,6 +321,8 @@ def main() -> None:
                 merged,
             )
 
+            input_species_taxids = set(input_taxids)
+
             homolog_count, homolog_taxids = read_homolog_taxids(
                 homolog_by_family[family_id],
                 parent,
@@ -326,6 +334,7 @@ def main() -> None:
                     f"{family_id}.ori",
                     len(fasta_ids),
                     input_taxids,
+                    input_species_taxids,
                     parent,
                     rank,
                     name,
@@ -337,6 +346,7 @@ def main() -> None:
                     f"{family_id}.amp",
                     len(fasta_ids) + homolog_count,
                     input_taxids + homolog_taxids,
+                    input_species_taxids,
                     parent,
                     rank,
                     name,
