@@ -1,8 +1,12 @@
 # AmpliPhy
 
+<p align="center"><img height="100" alt="AmpliPhy Logo" src="https://github.com/user-attachments/assets/6cd5e374-a50c-4374-b11e-3553c3eaf6bc"/></p>
+
 **_AmpliPhy_** is a scalable, fully automated Nextflow pipeline for improving phylogenetic inference of gene families through database-driven homolog enrichment.
 
-Preprint (bioRxiv): [doi.org/10.64898/2026.01.26.701724](https://www.biorxiv.org/content/10.64898/2026.01.26.701724)
+## Publication
+Please cite:
+> Kim, D., Gil, M., Katoh, K. & Dessimoz, C. (2026). AmpliPhy improves gene trees by adding homologous sequences without affecting alignments. _Bioinformatics Advances_, vbag222. [doi.org/10.1093/bioadv/vbag222](https://doi.org/10.1093/bioadv/vbag222)
 
 ## Quick start
 
