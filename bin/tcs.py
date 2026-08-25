@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -u
 """
-Usage: tcs_overlap.py <tree.nwk> <lineage.tsv>
+Usage: tcs.py <tree.nwk> <lineage.tsv>
 
 Calculates the taxonomy overlap score over the NCBI taxonomy tree of the phylogenetic tree.
   - tree.nwk: A Newick formatted tree file, where each leaf node is labeled with a Uniprot ID.
@@ -15,7 +15,8 @@ Original source code written by David Moi (@cactuskid)
 Modified and written by Dongwook Kim (@endixk)
 
 Please cite the following paper if you use this code:
-Moi, D. et al. (2023). bioRxiv, https://doi.org/10.1101/2023.09.19.558401
+Moi, D. et al., Nat. Struct. Mol. Biol. 32, 2492–2502 (2025), https://doi.org/10.1038/s41594-025-01649-8
+Kim, D. et al., Bioinform. Adv., vbag222 (2026), https://doi.org/10.1093/bioadv/vbag222
 """
 
 import csv
@@ -269,66 +270,38 @@ def getTaxOverlap(node):
 
     """
     Calculate the taxonomy overlap score for the given node in a phylogenetic tree.
-
-    The taxonomy overlap score is defined as the number of taxonomic labels shared by all the leaf nodes
-    descended from the given node, plus the sum of the scores of all its children. If a leaf node has no
-    taxonomic label, it is not counted towards the score. The function also calculates the size of the
-    largest loss in lineage length, defined as the difference between the length of the set of taxonomic
-    labels shared by all the leaf nodes and the length of the longest set of taxonomic labels among the
-    children of the node.
-
-    The function adds the following features to the node object:
-    - 'score': the taxonomy overlap score.
-    - 'size': the largest loss in lineage length.
-    - 'lineage': the set of taxonomic labels shared by all the leaf nodes descended from the node.
-
-    Parameters:
-    node (TreeNode): The node in a phylogenetic tree.
-
-    Returns:
-    set: The set of taxonomic labels shared by all the leaf nodes descended from the node, or `None` if
-    the node has no children with taxonomic labels.
     """
 
     if node.is_leaf() == True:
-        node.add_feature( 'score' ,  0 )
-        node.add_feature( 'size' ,  0 )
-        node.add_feature( 'score_x_frac' , 0)
+        node.add_feature('leaf_size', 1)
+        node.add_feature('leaf_acc', 0)
+        node.add_feature('tax_score', 0)
         return node.lineage
     else:
-        lengths = []
-        total = 0
-        redtotal = 0
-        fractotal = 0
         sets = []
-        scores = []
-        for i,c in enumerate(node.get_children()):
-            sets.append( getTaxOverlap(c))
-            total += c.score
+        leaf_size = 0
+        leaf_acc = 0
+        tax_score = 0
+        for i, c in enumerate(node.get_children()):
+            sets.append(getTaxOverlap(c))
+            leaf_size += c.leaf_size
+            leaf_acc += c.leaf_acc
+            tax_score += c.tax_score
+
         sets = [s for s in sets if s]
-        if len(sets)> 0:
-            for i,cset in enumerate(sets):
+        if len(sets) > 0:
+            for i, cset in enumerate(sets):
                 if i == 0:
                     nset = cset
                 else:
                     nset = cset.intersection(nset)
-                lengths.append(len(cset))
-            #add the number of unique lineages
-            score = len(nset) + total
-            #add the number of unique lineages weighted by the fraction of the tree
-
-            node.add_feature( 'score' ,  score )
-
-            #show the biggest loss in lineage length
-            node.add_feature( 'size' ,  abs( len(nset) - max(lengths) ) )
-
+            node.add_feature('tax_score', tax_score + len(nset) * leaf_size)
         else:
-            nset = None
-            node.add_feature( 'size' ,  0 )
-            node.add_feature( 'score' ,  0 )
+            nset = set()
+            node.add_feature('tax_score', tax_score)
 
-        node.add_feature( 'lineage' ,  nset )
-        #only in the case of a leaf with no label
+        node.add_feature('leaf_size', leaf_size)
+        node.add_feature('leaf_acc', leaf_acc + leaf_size)
     return nset
 
 def calc_score(t, lineage):
@@ -346,8 +319,9 @@ def calc_score(t, lineage):
     lineages = make_lineages(uniprot_rows)
     species = get_species(uniprot_rows)
     tree = label_leaves(tree, lineages, species)
-    getTaxOverlap(tree.treenode)
-    return tree.treenode.score
+    overlap = getTaxOverlap(tree.treenode)
+    adjscore = (tree.treenode.tax_score - tree.treenode.leaf_acc * len(overlap)) / tree.treenode.leaf_size
+    return adjscore
 
 
 if __name__ == "__main__":
@@ -375,3 +349,4 @@ if __name__ == "__main__":
 
     score = calc_score(tree, lineage=sys.argv[2])
     print(f"{tree_file}\t{score}")
+
