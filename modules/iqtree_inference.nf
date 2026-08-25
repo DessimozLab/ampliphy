@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
 process iqtree_inference {
-    label params.minimal ? 'minimal' : 'short'
+    label params.minimal ? 'minimal' : 'tree'
     publishDir "${params.output_dir}/tree", mode: 'copy',
         saveAs: { filename ->
             params.keep_unpruned_tree && filename.endsWith('.amp.unpruned.nwk') ? filename : null
